@@ -25,6 +25,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+  "click",
   "dataclasses-json",
   "importlib_resources",
   "jsonschema",
@@ -39,6 +40,9 @@ dependencies = [
 Documentation = "https://github.com/mrc-ide/outpack#readme"
 Issues = "https://github.com/mrc-ide/outpack/issues"
 Source = "https://github.com/mrc-ide/outpack"
+
+[project.scripts]
+orderly = "orderly.cli:cli"
 
 [tool.hatch.version]
 path = "src/outpack/__about__.py"
