@@ -88,7 +88,7 @@ def with_root(f=None, *, propagate=False):
         "--root",
         help=(
             "Path to the orderly repository. If not specified, the current"
-            "working directory is used."
+            " working directory is used."
         ),
         type=click.Path(),
         hidden=propagate,
