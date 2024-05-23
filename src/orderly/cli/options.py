@@ -116,6 +116,7 @@ def with_search_options(f):
             " specified multiple times to allow multiple locations. If none are"
             " specified, all configured locations are searched."
         ),
+        metavar="NAME",
     )
     @click.pass_context
     @functools.wraps(f)

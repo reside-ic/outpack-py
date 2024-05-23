@@ -1,5 +1,6 @@
 import sys
 from collections import Counter
+from urllib.parse import urlparse
 
 import click
 
@@ -24,13 +25,16 @@ from outpack.util import format_list
 @click.group(cls=PropagatingGroup)
 @with_root(propagate=True)
 def cli():
+    """Run 'orderly <command> --help' to see the options available for each subcommand."""
     pass
 
 
 @cli.command()
 @click.argument("path")
 @click.option(
-    "--archive", help="Path to the archive in which packets are stored."
+    "--archive",
+    help="Path to the archive in which packets will be stored.",
+    type=click.Path(),
 )
 @click.option(
     "--use-file-store",
@@ -47,7 +51,7 @@ def cli():
     ),
 )
 def init(path, archive, use_file_store, require_complete_tree):
-    """Initialize at new orderly repository in PATH."""
+    """Initialize at new orderly repository at the specified path."""
     kwargs = {}
     if archive is not None:
         kwargs["path_archive"] = archive
@@ -75,6 +79,7 @@ def init(path, archive, use_file_store, require_complete_tree):
     type=(str, str),
     multiple=True,
     help="Pass a string parameter to the report",
+    metavar="NAME VALUE",
 )
 @click.option(
     "-n",
@@ -83,6 +88,7 @@ def init(path, archive, use_file_store, require_complete_tree):
     type=(str, NumericalParamType()),
     multiple=True,
     help="Pass a numerical parameter to the report",
+    metavar="NAME VALUE",
 )
 @click.option(
     "-b",
@@ -91,6 +97,7 @@ def init(path, archive, use_file_store, require_complete_tree):
     type=(str, bool),
     multiple=True,
     help="Pass a boolean parameter to the report",
+    metavar="NAME VALUE",
 )
 @with_search_options
 @with_root
@@ -152,7 +159,11 @@ def search(query, root, search_options):
 @cli.group()
 @with_root(propagate=True)
 def location():
-    """Manage remote locations."""
+    """
+    Manage remote locations.
+
+    Run 'orderly location <command> --help' to see the options available for each subcommand.
+    """
     pass
 
 
@@ -184,21 +195,30 @@ def location_remove(root, name):
 
 @location.command("add")
 @click.argument("name")
-@click.argument("type", type=click.Choice(["path", "ssh"]), metavar="TYPE")
-@click.argument("location")
+@click.argument("location", metavar="(PATH | URL)")
 @with_root
-def location_add(root, name, type, location):
+def location_add(root, name, location):
     """
     Add a new remote location.
 
-    Allowed values for TYPE are "path" and "ssh".
-
-    For a location of type "path", the LOCATION argument is the path of another
-    orderly repository. For an "ssh" location, the LOCATION argument should be
-    the url to a remote server, of the form `user@hostname:path` or
-    `ssh://user@hostname:port/path`.
+    The location may be specified as a path, for outpack repositories that are
+    directly accesible through the file system, or as URLs. Currently only SSH
+    URLs are supported.
     """
-    if type == "path":
+    # On windows it could be slightly ambiguous whether "C://foo" is a URL or a
+    # file path, and we always interpret that as a URL. Users can easily
+    # disambiguate by using either backslashes or using a single forward slash.
+    if "://" not in location:
         outpack_location_add(name, "path", {"path": location}, root=root)
-    elif type == "ssh":
-        outpack_location_add(name, "ssh", {"url": location}, root=root)
+    else:
+        parts = urlparse(location)
+
+        if parts.scheme in {"ssh"}:
+            outpack_location_add(
+                name, parts.scheme, {"url": location}, root=root
+            )
+        else:
+            click.echo(
+                f"Unsupported location protocol: '{parts.scheme}'", err=True
+            )
+            sys.exit(1)

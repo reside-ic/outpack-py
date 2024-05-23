@@ -4,7 +4,7 @@ from click.testing import CliRunner
 from orderly.cli import cli
 from pytest_unordered import unordered
 
-from outpack.config import read_config
+from outpack.config import Location, read_config
 from outpack.location import outpack_location_add_path
 from outpack.root import OutpackRoot
 
@@ -189,6 +189,33 @@ def test_search_options(tmp_path):
     assert result.stderr.strip() == "No packets matching the query were found"
 
 
+def test_can_add_locations(tmp_path):
+    root = helpers.create_temporary_roots(tmp_path)
+
+    invoke(
+        "location",
+        "add",
+        "foo",
+        root["src"],
+        *("--root", root["dst"]),
+    )
+
+    invoke(
+        "location",
+        "add",
+        "bar",
+        "ssh://127.0.0.1/foo",
+        *("--root", root["dst"]),
+    )
+
+    config = read_config(root["dst"].path)
+    assert config.location == {
+        "local": Location("local", "local", None),
+        "foo": Location("foo", "path", {"path": str(root["src"].path)}),
+        "bar": Location("bar", "ssh", {"url": "ssh://127.0.0.1/foo"}),
+    }
+
+
 def test_can_manage_locations(tmp_path):
     root = helpers.create_temporary_roots(tmp_path)
 
@@ -199,7 +226,6 @@ def test_can_manage_locations(tmp_path):
         "location",
         "add",
         "foo",
-        "path",
         root["src"],
         *("--root", root["dst"]),
     )
@@ -229,19 +255,18 @@ def test_can_manage_locations(tmp_path):
     assert result.stdout.splitlines() == ["local"]
 
 
-def test_cannot_add_location_with_unknown_type(tmp_path):
-    root = helpers.create_temporary_roots(tmp_path)
+def test_cannot_add_location_with_unknown_protocol(tmp_path):
+    root = helpers.create_temporary_root(tmp_path)
     result = invoke(
         "location",
         "add",
         "origin",
-        "blabla",
-        root["src"],
+        "myproto://example.com",
         *("--root", root),
-        expected_exit_code=2,
+        expected_exit_code=1,
     )
     assert re.search(
-        "^Error: Invalid value for 'TYPE': 'blabla' is not one of .*",
+        "^Unsupported location protocol: 'myproto'$",
         result.stderr,
         re.MULTILINE,
     )
