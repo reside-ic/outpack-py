@@ -15,6 +15,7 @@ from pyorderly.outpack.location_pull import (
     outpack_location_pull_metadata,
     outpack_location_pull_packet,
 )
+from pyorderly.outpack.location_push import outpack_location_push
 from pyorderly.outpack.metadata import PacketFile, PacketLocation
 from pyorderly.outpack.static import LOCATION_LOCAL
 from pyorderly.outpack.util import read_string
@@ -195,3 +196,28 @@ def test_http_client_errors():
         client.get("/packit-error")
     with pytest.raises(HTTPError, match="400 Error: Custom error message"):
         client.get("/outpack-error")
+
+
+def test_can_push_packet(tmp_path):
+    root = create_temporary_roots(
+        tmp_path,
+        use_file_store=True,
+        require_complete_tree=True,
+        path_archive=None,
+    )
+    id = create_random_packet(root["dst"])
+
+    with start_outpack_server(root["src"]) as url:
+        outpack_location_add(
+            "upstream",
+            "http",
+            {"url": url},
+            root=root["dst"],
+        )
+
+        print(outpack_location_push([id], "upstream", root=root["dst"]))
+
+        # assert id not in root["dst"].index.all_metadata()
+
+        # outpack_location_pull_metadata(root=root["dst"])
+        # assert id in root["dst"].index.all_metadata()

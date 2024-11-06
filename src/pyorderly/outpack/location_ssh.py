@@ -1,7 +1,7 @@
 import base64
 import errno
 from contextlib import ExitStack
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Dict, List
 from urllib.parse import urlsplit
 
@@ -138,6 +138,22 @@ class OutpackLocationSSH(LocationDriver):
                 raise Exception(msg) from e
             else:
                 raise
+
+    @override
+    def list_unknown_packets(self, ids: List[str]) -> List[str]:
+        raise NotImplementedError()
+
+    @override
+    def list_unknown_files(self, hashes: List[str]) -> List[str]:
+        raise NotImplementedError()
+
+    @override
+    def push_file(self, src: Path, hash: str):
+        raise NotImplementedError()
+
+    @override
+    def push_metadata(self, src: Path, hash: str):
+        raise NotImplementedError()
 
     def _file_path(self, packet: MetadataCore, file: PacketFile):
         if self.config.core.use_file_store:

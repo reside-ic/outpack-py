@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from contextlib import AbstractContextManager
+from pathlib import Path
 from typing import Dict, List
 
 from pyorderly.outpack.metadata import MetadataCore, PacketFile, PacketLocation
@@ -23,3 +24,15 @@ class LocationDriver(AbstractContextManager):
     def fetch_file(
         self, packet: MetadataCore, file: PacketFile, dest: str
     ) -> None: ...
+
+    @abstractmethod
+    def list_unknown_packets(self, ids: List[str]) -> List[str]: ...
+
+    @abstractmethod
+    def list_unknown_files(self, hashes: List[str]) -> List[str]: ...
+
+    @abstractmethod
+    def push_file(self, src: Path, hash: str): ...
+
+    @abstractmethod
+    def push_metadata(self, src: Path, hash: str): ...

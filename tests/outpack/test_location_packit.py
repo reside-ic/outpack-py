@@ -1,10 +1,10 @@
-import pytest
 import re
+
+import pytest
 import responses
 from responses import matchers
 from responses.registries import OrderedRegistry
 
-from pyorderly.outpack.location_pull import outpack_location_pull_metadata
 from pyorderly.outpack.location import outpack_location_add
 from pyorderly.outpack.location_packit import (
     GITHUB_ACCESS_TOKEN_URL,
@@ -14,6 +14,7 @@ from pyorderly.outpack.location_packit import (
     outpack_location_packit,
     packit_authorisation,
 )
+from pyorderly.outpack.location_pull import outpack_location_pull_metadata
 
 from ..helpers import create_temporary_root
 

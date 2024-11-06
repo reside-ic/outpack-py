@@ -11,7 +11,7 @@ from pyorderly.outpack.tools import GitInfo
 @dataclass
 class PacketFile(DataClassJsonMixin):
     path: str
-    size: float
+    size: int
     hash: str
 
     @staticmethod
