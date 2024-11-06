@@ -60,12 +60,13 @@ def transient_working_directory(path):
             os.chdir(origin)
 
 
-def assert_file_exists(path, *, workdir=None, name="File"):
+def assert_file_exists(path: Union[str, List[str]], *, workdir=None, name="File"):
     with transient_working_directory(workdir):
         if isinstance(path, list):
             missing = [str(p) for p in path if not os.path.exists(p)]
         else:
             missing = [] if os.path.exists(path) else [path]
+
     if len(missing):
         missing_str = ", ".join(missing)
         msg = f"{name} does not exist: {missing_str}"
@@ -217,3 +218,8 @@ def as_posix_path(paths):
         return [as_posix_path(v) for v in paths]
     else:
         return PurePath(paths).as_posix()
+
+T = TypeVar('T')
+def as_list(x: Union[T, List[T]]) -> List[T]:
+    if isinstance(x, list): return x
+    else: return [x]

@@ -9,6 +9,7 @@ import pytest
 import requests
 
 from pyorderly.outpack.root import OutpackRoot
+from pyorderly.outpack.init import outpack_init
 
 
 def _wait_ready(p, url, args, timeout=2):
@@ -69,6 +70,13 @@ def start_outpack_server(root: Union[Path, OutpackRoot], port: int = 8080):
         root_path = str(root.path)
     else:
         root_path = str(root)
+
+    outpack_init(
+        root_path,
+        require_complete_tree=True,
+        use_file_store=True,
+        path_archive=None,
+    )
 
     args = [
         binary,

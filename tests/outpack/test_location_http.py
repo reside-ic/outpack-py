@@ -198,26 +198,22 @@ def test_http_client_errors():
         client.get("/outpack-error")
 
 
-def test_can_push_packet(tmp_path):
-    root = create_temporary_roots(
-        tmp_path,
-        use_file_store=True,
-        require_complete_tree=True,
-        path_archive=None,
+@pytest.mark.parametrize("use_file_store", [True, False])
+def test_can_push_packet(tmp_path, use_file_store) -> None:
+    root = create_temporary_root(
+        tmp_path / "root",
+        use_file_store=use_file_store,
     )
-    id = create_random_packet(root["dst"])
 
-    with start_outpack_server(root["src"]) as url:
+    ids = [create_random_packet(root) for _ in range(3)]
+
+    with start_outpack_server(tmp_path / "server") as url:
         outpack_location_add(
             "upstream",
             "http",
             {"url": url},
-            root=root["dst"],
+            root=root,
         )
 
-        print(outpack_location_push([id], "upstream", root=root["dst"]))
-
-        # assert id not in root["dst"].index.all_metadata()
-
-        # outpack_location_pull_metadata(root=root["dst"])
-        # assert id in root["dst"].index.all_metadata()
+        outpack_location_push(ids[0], "upstream", root=root)
+        outpack_location_push(ids[1], "upstream", root=root)

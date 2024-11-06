@@ -204,6 +204,7 @@ testpaths = ["tests"]
 
 [tool.mypy]
 allow_redefinition = true
+# check_untyped_defs = true
 
 # https://github.com/libgit2/pygit2/issues/709
 [[tool.mypy.overrides]]
