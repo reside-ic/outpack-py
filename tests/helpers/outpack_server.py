@@ -8,6 +8,7 @@ from typing import Union
 import pytest
 import requests
 
+from pyorderly.outpack.init import outpack_init
 from pyorderly.outpack.root import OutpackRoot
 
 
@@ -66,15 +67,26 @@ def start_outpack_server(root: Union[Path, OutpackRoot], port: int = 8080):
         pytest.skip("outpack_server not installed")
 
     if isinstance(root, OutpackRoot):
-        root_path = str(root.path)
+        root_path = root.path
     else:
-        root_path = str(root)
+        root_path = root
+
+    outpack_init(
+        root_path,
+        require_complete_tree=True,
+        use_file_store=True,
+        path_archive=None,
+    )
+
+    # outpack_server doesn't create the files folder if missing. Probably
+    # something we should fix.
+    root_path.joinpath(".outpack/files").mkdir(exist_ok=True)
 
     args = [
         binary,
         "start-server",
         "--root",
-        root_path,
+        str(root_path),
         "--listen",
         f"0.0.0.0:{port}",
     ]

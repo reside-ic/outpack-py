@@ -5,7 +5,7 @@ import string
 import textwrap
 from contextlib import contextmanager
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Optional
 
 import pytest
@@ -14,7 +14,7 @@ from pyorderly.outpack.init import outpack_init
 from pyorderly.outpack.location import outpack_location_add_path
 from pyorderly.outpack.metadata import MetadataCore, PacketDepends
 from pyorderly.outpack.packet import Packet, insert_packet
-from pyorderly.outpack.root import root_open
+from pyorderly.outpack.root import OutpackRoot, root_open
 from pyorderly.outpack.schema import outpack_schema_version
 from pyorderly.outpack.util import openable_temporary_file
 from pyorderly.run import orderly_run
@@ -44,7 +44,18 @@ def create_packet(root, name, *, packet_id=None, parameters=None):
             insert_packet(root, Path(src), metadata)
 
 
-def create_random_packet(root, name="data", *, parameters=None, packet_id=None):
+def create_random_file(dir: Path) -> Path:
+    dir.mkdir(exist_ok=True, parents=True)
+    with NamedTemporaryFile(delete=False, dir=dir, mode="w") as f:
+        d = [f"{random.random()}\n" for _ in range(10)]
+        f.writelines(d)
+
+    return Path(f.name)
+
+
+def create_random_packet(
+    root, name="data", *, parameters=None, packet_id=None
+) -> str:
     d = [f"{random.random()}\n" for _ in range(10)]
 
     with create_packet(
@@ -76,7 +87,7 @@ def create_random_packet_chain(root, length, base=None):
     return ids
 
 
-def create_temporary_root(path, **kwargs):
+def create_temporary_root(path, **kwargs) -> OutpackRoot:
     outpack_init(path, **kwargs)
     return root_open(path, locate=False)
 

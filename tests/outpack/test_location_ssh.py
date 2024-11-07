@@ -133,8 +133,8 @@ def test_can_list_packets(tmp_path):
     packets = root.index.location(LOCATION_LOCAL)
 
     with start_ssh_location(tmp_path) as location:
-        assert location.list().keys() == set(ids)
-        assert location.list() == packets
+        assert location.list_packets().keys() == set(ids)
+        assert location.list_packets() == packets
 
 
 def test_can_fetch_metadata(tmp_path):
@@ -280,7 +280,7 @@ def test_can_use_abolute_path(tmp_path):
     path = root["foo"].path
     assert path.is_absolute()
     with start_ssh_location(tmp_path, path=path.as_posix()) as location:
-        assert location.list().keys() == {ids["foo"]}
+        assert location.list_packets().keys() == {ids["foo"]}
 
     with start_ssh_location(tmp_path, path="bar") as location:
-        assert location.list().keys() == {ids["bar"]}
+        assert location.list_packets().keys() == {ids["bar"]}

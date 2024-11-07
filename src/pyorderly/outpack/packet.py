@@ -1,4 +1,3 @@
-import shutil
 import time
 from pathlib import Path
 
@@ -132,12 +131,8 @@ def insert_packet(root, path, meta):
         for p in meta.files:
             root.files.put(path / p.path, p.hash)
 
-    if root.config.core.path_archive:
-        dest = root.path / "archive" / meta.name / meta.id
-        for p in meta.files:
-            p_dest = dest / p.path
-            p_dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(path / p.path, p_dest)
+    if root.archive is not None:
+        root.archive.import_packet(meta, path)
 
     json = meta.to_json(separators=(",", ":"))
     hash_meta = hash_string(json, root.config.core.hash_algorithm)

@@ -1,18 +1,17 @@
-import builtins
-import os
 import shutil
+from pathlib import Path
 
 from typing_extensions import override
 
 from pyorderly.outpack.location_driver import LocationDriver
 from pyorderly.outpack.metadata import MetadataCore, PacketFile, PacketLocation
-from pyorderly.outpack.root import find_file_by_hash, root_open
+from pyorderly.outpack.root import root_open
 from pyorderly.outpack.static import LOCATION_LOCAL
 from pyorderly.outpack.util import read_string
 
 
 class OutpackLocationPath(LocationDriver):
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.__root = root_open(path, locate=False)
 
     @override
@@ -24,11 +23,11 @@ class OutpackLocationPath(LocationDriver):
         pass
 
     @override
-    def list(self) -> dict[str, PacketLocation]:
+    def list_packets(self) -> dict[str, PacketLocation]:
         return self.__root.index.location(LOCATION_LOCAL)
 
     @override
-    def metadata(self, packet_ids: builtins.list[str]) -> dict[str, str]:
+    def metadata(self, packet_ids: list[str]) -> dict[str, str]:
         all_ids = self.__root.index.location(LOCATION_LOCAL).keys()
         missing_ids = set(packet_ids).difference(all_ids)
         if missing_ids:
@@ -42,15 +41,29 @@ class OutpackLocationPath(LocationDriver):
         return ret
 
     @override
-    def fetch_file(self, _packet: MetadataCore, file: PacketFile, dest: str):
-        if self.__root.config.core.use_file_store:
-            path = self.__root.files.filename(file.hash)
-            if not os.path.exists(path):
-                msg = f"Hash '{file.hash}' not found at location"
-                raise Exception(msg)
-        else:
-            path = find_file_by_hash(self.__root, file.hash)
-            if path is None:
-                msg = f"Hash '{file.hash}' not found at location"
-                raise Exception(msg)
-        shutil.copyfile(path, dest)
+    def fetch_file(self, packet: MetadataCore, file: PacketFile, dest: str):
+        try:
+            src = self.__root.find_file_by_hash(
+                file.hash, candidates=[packet.id]
+            )
+        except FileNotFoundError as e:
+            msg = f"Hash '{file.hash}' not found at location"
+            raise Exception(msg) from e
+
+        shutil.copyfile(src, dest)
+
+    @override
+    def list_unknown_packets(self, ids: list[str]) -> list[str]:
+        raise NotImplementedError()
+
+    @override
+    def list_unknown_files(self, hashes: list[str]) -> list[str]:
+        raise NotImplementedError()
+
+    @override
+    def push_file(self, src: Path, hash: str):
+        raise NotImplementedError()
+
+    @override
+    def push_metadata(self, src: Path, hash: str):
+        raise NotImplementedError()

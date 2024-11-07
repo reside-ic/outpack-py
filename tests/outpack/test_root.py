@@ -6,7 +6,7 @@ from pyorderly.outpack.config import read_config
 from pyorderly.outpack.filestore import FileStore
 from pyorderly.outpack.index import Index
 from pyorderly.outpack.init import outpack_init
-from pyorderly.outpack.root import find_file_by_hash, root_open
+from pyorderly.outpack.root import root_open
 from pyorderly.outpack.util import transient_working_directory
 
 from .. import helpers
@@ -70,10 +70,12 @@ def test_can_find_file_by_hash(tmp_path):
     meta = root.index.metadata(id[1])
     hash = meta.files[0].hash
     assert (
-        find_file_by_hash(root, hash)
+        root.archive.find_file(hash)
         == root.path / "archive" / "data" / id[1] / "data.txt"
     )
-    assert find_file_by_hash(root, hash[:-1]) is None
+
+    with pytest.raises(FileNotFoundError):
+        root.archive.find_file(hash[:-1])
 
 
 def test_can_reject_corrupted_files(tmp_path, capsys):
@@ -85,35 +87,34 @@ def test_can_reject_corrupted_files(tmp_path, capsys):
     path = root.path / "archive" / "data" / id[1] / "data.txt"
     with open(path, "a") as f:
         f.write("1")
-    assert find_file_by_hash(root, hash) is None
+
+    msg = "File not found in archive"
+    with pytest.raises(FileNotFoundError, match=msg):
+        root.archive.find_file(hash)
+
     captured = capsys.readouterr()
     assert (
         captured.out
         == f"Rejecting file from archive 'data.txt' in 'data/{id[1]}'\n"
     )
-    dest = tmp_path / "dest"
-    with pytest.raises(Exception, match="File not found in archive"):
-        root.export_file(id[1], "data.txt", "result.txt", dest)
+
+    msg = "File not found in archive, or corrupt: 'data.txt'"
+    with pytest.raises(FileNotFoundError, match=msg):
+        root.export_file(id[1], "data.txt", tmp_path / "result.txt")
 
 
-def test_can_export_files_from_root_using_store(tmp_path):
-    outpack_init(tmp_path, use_file_store=True, path_archive=None)
+@pytest.mark.parametrize("use_file_store", [True, False])
+def test_can_export_files_from_root(tmp_path, use_file_store):
+    outpack_init(
+        tmp_path,
+        use_file_store=use_file_store,
+        path_archive=None if use_file_store else "archive",
+    )
+
     id = helpers.create_random_packet(tmp_path)
     r = root_open(tmp_path)
-    dest = tmp_path / "dest"
-    res = r.export_file(id, "data.txt", "result.txt", dest)
-    assert res == "result.txt"
-    assert (dest / "result.txt").exists()
-
-
-def test_can_export_files_from_root_using_archive(tmp_path):
-    outpack_init(tmp_path, use_file_store=False, path_archive="archive")
-    id = helpers.create_random_packet(tmp_path)
-    r = root_open(tmp_path)
-    dest = tmp_path / "dest"
-    res = r.export_file(id, "data.txt", "result.txt", dest)
-    assert res == "result.txt"
-    assert (dest / "result.txt").exists()
+    r.export_file(id, "data.txt", tmp_path / "result.txt")
+    assert (tmp_path / "result.txt").exists()
 
 
 def test_root_path_is_absolute(tmp_path):

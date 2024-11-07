@@ -1,5 +1,5 @@
-import builtins
 import shutil
+from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
@@ -58,7 +58,7 @@ class OutpackLocationHTTP(LocationDriver):
         self._client.__exit__(*args)
 
     @override
-    def list(self) -> dict[str, PacketLocation]:
+    def list_packets(self) -> dict[str, PacketLocation]:
         response = self._client.get("metadata/list").json()
         data = response["data"]
         return {
@@ -66,7 +66,7 @@ class OutpackLocationHTTP(LocationDriver):
         }
 
     @override
-    def metadata(self, ids: builtins.list[str]) -> dict[str, str]:
+    def metadata(self, ids: list[str]) -> dict[str, str]:
         result = {}
         for i in ids:
             result[i] = self._client.get(f"metadata/{i}/text").text
@@ -78,3 +78,34 @@ class OutpackLocationHTTP(LocationDriver):
         response = self._client.get(f"file/{file.hash}", stream=True)
         with open(dest, "wb") as f:
             shutil.copyfileobj(response.raw, f)
+
+    @override
+    def list_unknown_packets(self, ids: list[str]) -> list[str]:
+        response = self._client.post(
+            "/packets/missing",
+            json={
+                "ids": ids,
+                "unpacked": True,
+            },
+        ).json()
+        return response["data"]
+
+    @override
+    def list_unknown_files(self, hashes: list[str]) -> list[str]:
+        response = self._client.post(
+            "/files/missing",
+            json={
+                "hashes": hashes,
+            },
+        ).json()
+        return response["data"]
+
+    @override
+    def push_file(self, src: Path, hash: str):
+        with open(src, "rb") as f:
+            self._client.post(f"file/{hash}", data=f)
+
+    @override
+    def push_metadata(self, src: Path, hash: str):
+        with open(src, "rb") as f:
+            self._client.post(f"packet/{hash}", data=f)

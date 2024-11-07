@@ -1,5 +1,6 @@
 import hashlib
 from dataclasses import dataclass
+from typing import Union
 
 
 @dataclass
@@ -11,7 +12,7 @@ class Hash:
         return f"{self.algorithm}:{self.value}"
 
 
-def hash_file(path, algorithm="sha256"):
+def hash_file(path, algorithm: str = "sha256") -> Hash:
     h = hashlib.new(algorithm)
     blocksize = 128 * h.block_size
     with open(path, "rb") as f:
@@ -27,7 +28,7 @@ def hash_string(data, algorithm):
     return Hash(algorithm, h.hexdigest())
 
 
-def hash_parse(string):
+def hash_parse(string: Union[str, Hash]) -> Hash:
     if isinstance(string, Hash):
         return string
     return Hash(*string.split(":"))

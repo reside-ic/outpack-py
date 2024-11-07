@@ -38,7 +38,7 @@ def test_can_pass_packit_token():
     )
 
     location = outpack_location_packit("https://example.com", token="mytoken")
-    location.list()
+    location.list_packets()
 
 
 @responses.activate(assert_all_requests_are_fired=True)
@@ -55,7 +55,7 @@ def test_can_pass_github_personal_token():
     )
 
     location = outpack_location_packit("https://example.com", token="ghp_token")
-    location.list()
+    location.list_packets()
 
 
 @responses.activate(assert_all_requests_are_fired=True)
@@ -72,12 +72,12 @@ def test_authentication_is_cached():
     )
 
     location = outpack_location_packit("https://example.com", token="ghp_token")
-    location.list()
+    location.list_packets()
 
     assert auth_response.call_count == 1
     assert list_response.call_count == 1
 
-    location.list()
+    location.list_packets()
 
     assert auth_response.call_count == 1
     assert list_response.call_count == 2
@@ -139,7 +139,7 @@ def test_can_perform_interactive_authentication(capsys):
     )
 
     location = outpack_location_packit("https://example.com")
-    location.list()
+    location.list_packets()
 
     captured = capsys.readouterr()
     assert "enter the code <1234-5678>" in captured.out
