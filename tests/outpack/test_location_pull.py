@@ -385,7 +385,6 @@ def test_detect_and_avoid_modified_files_in_source_repository(tmp_path):
 
     ## When I corrupt the file in the first ID by truncating it:
     src_data = root["src"].path / "archive" / "data"
-    dest_data = root["dst"].path / "archive" / "data"
     with open(src_data / ids[0] / "a.txt", "w") as f:
         f.truncate(0)
 
@@ -398,6 +397,7 @@ def test_detect_and_avoid_modified_files_in_source_repository(tmp_path):
         r"Rejecting file from archive 'a\.txt' in 'data/", f.getvalue()
     )
 
+    dest_data = root["dst"].path / "archive" / "data"
     assert hash_file(dest_data / ids[0] / "a.txt") == hash_file(
         src_data / ids[1] / "a.txt"
     )

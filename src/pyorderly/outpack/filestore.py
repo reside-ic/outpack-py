@@ -15,27 +15,28 @@ class FileStore:
         self._path = Path(path)
         os.makedirs(path, exist_ok=True)
 
-    def filename(self, hash):
+    def filename(self, hash: str, *, allow_missing: bool = False) -> Path:
         dat = hash_parse(hash)
-        return self._path / dat.algorithm / dat.value[:2] / dat.value[2:]
+        path = self._path / dat.algorithm / dat.value[:2] / dat.value[2:]
+        if not allow_missing and not path.exists():
+            msg = f"Hash '{hash}' not found in store"
+            raise FileNotFoundError(ENOENT, msg)
+        return path
 
     def get(self, hash, dst, *, overwrite=False):
         src = self.filename(hash)
-        if not os.path.exists(src):
-            msg = f"Hash '{hash}' not found in store"
-            raise FileNotFoundError(ENOENT, msg)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if not overwrite and os.path.exists(dst):
             msg = f"Failed to copy '{src}' to '{dst}', file already exists"
             raise Exception(msg)
         shutil.copyfile(src, dst)
 
-    def exists(self, hash):
-        return os.path.exists(self.filename(hash))
+    def exists(self, hash: str) -> bool:
+        return self.filename(hash, allow_missing=True).exists()
 
     def put(self, src, hash, *, move=False):
         hash_validate_file(src, hash)
-        dst = self.filename(hash)
+        dst = self.filename(hash, allow_missing=True)
         if not os.path.exists(dst):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             if move:

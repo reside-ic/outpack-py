@@ -1,6 +1,7 @@
 import collections
 import shutil
 from pathlib import PurePath
+from typing import Union
 
 from pyorderly.outpack.config import Location, update_config
 from pyorderly.outpack.location_driver import LocationDriver
@@ -16,7 +17,7 @@ from pyorderly.outpack.static import (
 )
 
 
-def outpack_location_list(root=None, *, locate=True):
+def outpack_location_list(root=None, *, locate=True) -> list[str]:
     root = root_open(root, locate=locate)
     return list(root.config.location.keys())
 
@@ -94,8 +95,13 @@ def outpack_location_rename(old, new, root=None, *, locate=True):
 
 
 def location_resolve_valid(
-    location, root, *, include_local, include_orphan, allow_no_locations
-):
+    location: Union[None, str, list[str]],
+    root: OutpackRoot,
+    *,
+    include_local: bool,
+    include_orphan: bool,
+    allow_no_locations: bool,
+) -> list[str]:
     if location is None:
         location = outpack_location_list(root)
     elif isinstance(location, str):

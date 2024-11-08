@@ -28,7 +28,7 @@ def copy_files(
 
     try:
         for here, there in plan.files.items():
-            root.export_file(id, there.path, here, dest)
+            root.export_file(id, there.path, dest / here)
 
     except FileNotFoundError as e:
         if not options.allow_remote:

@@ -1,12 +1,11 @@
 import base64
-import builtins
 import errno
 from contextlib import ExitStack
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
 import paramiko
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from pyorderly.outpack.config import Config
 from pyorderly.outpack.hash import hash_parse
@@ -53,7 +52,7 @@ class OutpackLocationSSH(LocationDriver):
         self._stack = ExitStack()
 
     @override
-    def __enter__(self):
+    def __enter__(self) -> Self:
         with ExitStack() as stack:
             client = stack.enter_context(paramiko.SSHClient())
 
@@ -104,7 +103,7 @@ class OutpackLocationSSH(LocationDriver):
         return self._stack.__exit__(*args)
 
     @override
-    def list(self) -> dict[str, PacketLocation]:
+    def list_packets(self) -> dict[str, PacketLocation]:
         path = self._root / ".outpack" / "location" / LOCATION_LOCAL
         result = {}
         for packet in self._sftp.listdir(str(path)):
@@ -113,7 +112,7 @@ class OutpackLocationSSH(LocationDriver):
         return result
 
     @override
-    def metadata(self, ids: builtins.list[str]) -> dict[str, str]:
+    def metadata(self, ids: list[str]) -> dict[str, str]:
         path = self._root / ".outpack" / "metadata"
         result = {}
 
@@ -138,6 +137,22 @@ class OutpackLocationSSH(LocationDriver):
                 raise Exception(msg) from e
             else:
                 raise
+
+    @override
+    def list_unknown_packets(self, ids: list[str]) -> list[str]:
+        raise NotImplementedError()
+
+    @override
+    def list_unknown_files(self, hashes: list[str]) -> list[str]:
+        raise NotImplementedError()
+
+    @override
+    def push_file(self, src: Path, hash: str):
+        raise NotImplementedError()
+
+    @override
+    def push_metadata(self, src: Path, hash: str):
+        raise NotImplementedError()
 
     def _file_path(self, packet: MetadataCore, file: PacketFile):
         if self.config.core.use_file_store:
