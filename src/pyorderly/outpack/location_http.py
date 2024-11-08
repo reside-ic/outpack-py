@@ -3,7 +3,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from pyorderly.outpack.location_driver import LocationDriver
 from pyorderly.outpack.metadata import MetadataCore, PacketFile, PacketLocation
@@ -50,7 +50,7 @@ class OutpackLocationHTTP(LocationDriver):
         self._base_url = url
         self._client = OutpackHTTPClient(url, authentication)
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self._client.__enter__()
         return self
 

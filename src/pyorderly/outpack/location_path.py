@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from pyorderly.outpack.location_driver import LocationDriver
 from pyorderly.outpack.metadata import MetadataCore, PacketFile, PacketLocation
@@ -15,7 +15,7 @@ class OutpackLocationPath(LocationDriver):
         self.__root = root_open(path, locate=False)
 
     @override
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     @override

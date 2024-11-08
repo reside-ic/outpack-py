@@ -5,7 +5,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
 import paramiko
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from pyorderly.outpack.config import Config
 from pyorderly.outpack.hash import hash_parse
@@ -52,7 +52,7 @@ class OutpackLocationSSH(LocationDriver):
         self._stack = ExitStack()
 
     @override
-    def __enter__(self):
+    def __enter__(self) -> Self:
         with ExitStack() as stack:
             client = stack.enter_context(paramiko.SSHClient())
 

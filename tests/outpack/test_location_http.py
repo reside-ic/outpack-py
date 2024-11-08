@@ -1,11 +1,10 @@
 import pytest
-from pyorderly.outpack.hash import hash_validate_string
 import requests
 import responses
 from requests import HTTPError
 
 from pyorderly.outpack.filestore import FileStore
-from pyorderly.outpack.hash import hash_file
+from pyorderly.outpack.hash import hash_file, hash_validate_string
 from pyorderly.outpack.location import outpack_location_add
 from pyorderly.outpack.location_http import (
     OutpackHTTPClient,

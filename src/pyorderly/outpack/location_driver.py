@@ -1,7 +1,8 @@
 from abc import abstractmethod
 from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import Self
+
+from typing_extensions import Self
 
 from pyorderly.outpack.metadata import MetadataCore, PacketFile, PacketLocation
 
