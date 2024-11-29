@@ -21,6 +21,7 @@ extensions = [
     "myst_parser",
     "sphinx.ext.autosectionlabel",
     "sphinx_copybutton",
+    "sphinx_autorun",
 ]
 
 autoapi_dirs = ["../src"]
