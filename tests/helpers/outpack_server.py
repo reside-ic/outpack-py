@@ -8,8 +8,8 @@ from typing import Union
 import pytest
 import requests
 
-from pyorderly.outpack.root import OutpackRoot
 from pyorderly.outpack.init import outpack_init
+from pyorderly.outpack.root import OutpackRoot
 
 
 def _wait_ready(p, url, args, timeout=2):

@@ -14,7 +14,7 @@ from pyorderly.outpack.init import outpack_init
 from pyorderly.outpack.location import outpack_location_add_path
 from pyorderly.outpack.metadata import MetadataCore, PacketDepends
 from pyorderly.outpack.packet import Packet, insert_packet
-from pyorderly.outpack.root import root_open, OutpackRoot
+from pyorderly.outpack.root import OutpackRoot, root_open
 from pyorderly.outpack.schema import outpack_schema_version
 from pyorderly.outpack.util import openable_temporary_file
 from pyorderly.run import orderly_run
@@ -44,7 +44,9 @@ def create_packet(root, name, *, packet_id=None, parameters=None):
             insert_packet(root, Path(src), metadata)
 
 
-def create_random_packet(root, name="data", *, parameters=None, packet_id=None) -> str:
+def create_random_packet(
+    root, name="data", *, parameters=None, packet_id=None
+) -> str:
     d = [f"{random.random()}\n" for _ in range(10)]
 
     with create_packet(
