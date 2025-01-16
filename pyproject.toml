@@ -26,6 +26,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
+  "click",
   "dataclasses-json",
   "importlib_resources",
   "jsonschema",
@@ -42,6 +43,9 @@ dependencies = [
 Documentation = "https://github.com/mrc-ide/pyorderly#readme"
 Issues = "https://github.com/mrc-ide/pyorderly/issues"
 Source = "https://github.com/mrc-ide/pyorderly"
+
+[project.scripts]
+orderly = "orderly.cli:cli"
 
 [tool.hatch.version]
 path = "src/pyorderly/__about__.py"
